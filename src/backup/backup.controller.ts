@@ -6,7 +6,7 @@ export class BackupController {
   constructor(private readonly backupService: BackupService) {}
 
   @Get()
-  sayHi(): string {
-    return 'Hi!';
+  sayHi(): { message: string } {
+    return { message: 'Backup service is running' };
   }
 }
