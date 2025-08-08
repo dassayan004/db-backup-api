@@ -4,7 +4,7 @@ import { TestConnectionDto } from './dto/test-connection.dto';
 import { DatabaseProvider } from '@/common/enum';
 import {
   MongoService,
-  MssqlService,
+  MsSqlService,
   MysqlService,
   PostgresService,
 } from './db-service';
@@ -14,7 +14,7 @@ export class ConnectionService {
     private readonly pgService: PostgresService,
     private readonly mongoService: MongoService,
     private readonly mysqlService: MysqlService,
-    private readonly mssqlService: MssqlService,
+    private readonly mssqlService: MsSqlService,
   ) {}
   async testConnection(
     dto: TestConnectionDto,

@@ -5,7 +5,7 @@ import {
   PostgresService,
   MongoService,
   MysqlService,
-  MssqlService,
+  MsSqlService,
 } from './db-service';
 
 @Module({
@@ -15,7 +15,7 @@ import {
     PostgresService,
     MongoService,
     MysqlService,
-    MssqlService,
+    MsSqlService,
   ],
 })
 export class ConnectionModule {}

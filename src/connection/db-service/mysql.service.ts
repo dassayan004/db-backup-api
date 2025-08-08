@@ -14,7 +14,7 @@ export class MysqlService {
       this.logger.debug(`Connected to MySQL at ${dto.connectionString}`);
       return true;
     } catch (error) {
-      this.logger.error(`MySQL connection failed`, error.stack);
+      this.logger.error(`MySQL connection failed: ${error.message}`);
       return false;
     } finally {
       if (connection) {

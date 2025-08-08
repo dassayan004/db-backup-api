@@ -1,19 +1,22 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { ConnectionPool } from 'mssql';
 import { TestConnectionDto } from '../dto/test-connection.dto';
+import { parseMssqlUrlConnectionString } from '@/common/utils/util';
 
 @Injectable()
-export class MssqlService {
-  private readonly logger = new Logger(MssqlService.name);
+export class MsSqlService {
+  private readonly logger = new Logger(MsSqlService.name);
 
   async checkConnection(dto: TestConnectionDto): Promise<boolean> {
     let pool: ConnectionPool | undefined;
     try {
-      pool = await new ConnectionPool(dto.connectionString).connect();
+      const config = parseMssqlUrlConnectionString(dto.connectionString);
+      pool = await new ConnectionPool(config).connect();
+
       this.logger.debug(`Connected to MSSQL at ${dto.connectionString}`);
       return true;
     } catch (error) {
-      this.logger.error(`MSSQL connection failed`, error.stack);
+      this.logger.error(`MSSQL connection failed: ${error.message}`);
       return false;
     } finally {
       if (pool) {
@@ -33,7 +36,8 @@ export class MssqlService {
   ): Promise<{ databases: string[] }> {
     let pool: ConnectionPool | undefined;
     try {
-      pool = await new ConnectionPool(dto.connectionString).connect();
+      const config = parseMssqlUrlConnectionString(dto.connectionString);
+      pool = await new ConnectionPool(config).connect();
       const result = await pool
         .request()
         .query(`SELECT name FROM sys.databases`);

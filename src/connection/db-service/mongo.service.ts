@@ -14,7 +14,7 @@ export class MongoService {
       this.logger.debug(`Connected to MongoDB at ${dto.connectionString}`);
       return true;
     } catch (error) {
-      this.logger.error(`MongoDB connection failed`, error.stack);
+      this.logger.error(`MongoDB connection failed: ${error.message}`);
       return false;
     } finally {
       await client

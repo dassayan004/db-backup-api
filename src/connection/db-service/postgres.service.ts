@@ -13,7 +13,7 @@ export class PostgresService {
       this.logger.debug(`Connected to Postgres at ${dto.connectionString}`);
       return true;
     } catch (error) {
-      this.logger.error(`Postgres connection failed`, error.stack);
+      this.logger.error(`Postgres connection failed: ${error.message}`);
       return false;
     } finally {
       await client
