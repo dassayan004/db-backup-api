@@ -28,7 +28,13 @@ async function bootstrap() {
   app.enableShutdownHooks();
 
   // Pipes
-  app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
 
   await app.listen(port);
   Logger.log(`🚀 Application is running on: ${baseUrl}`);

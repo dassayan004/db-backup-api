@@ -25,7 +25,7 @@ export default tseslint.config(
     },
   },
   {
-     rules: {
+    rules: {
       // ✅ Prettier integration
       'prettier/prettier': 'error',
 
@@ -34,6 +34,7 @@ export default tseslint.config(
       '@typescript-eslint/no-floating-promises': 'off',
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
+      '@typescript-eslint/no-redundant-type-constituents': 'off',
 
       // ✅ Optional strictness
       '@typescript-eslint/no-unsafe-argument': 'off',

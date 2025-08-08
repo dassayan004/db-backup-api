@@ -6,6 +6,7 @@ import { exec as _exec } from 'child_process';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { zipFile } from '../utils/zip.util';
+import { parseConnectionString } from '../utils/util';
 
 const exec = promisify(_exec);
 @Injectable()
@@ -13,6 +14,7 @@ export class PostgresBackupStrategy implements BackupStrategy<BackupDto> {
   private readonly logger = new Logger(PostgresBackupStrategy.name);
 
   async runBackup(dto: BackupDto): Promise<string> {
+    // const connection = dto.connection as PostgresConnectionDto;
     const timestamp = new Date()
       .toISOString()
       .replace(/T/, '_')
@@ -23,13 +25,14 @@ export class PostgresBackupStrategy implements BackupStrategy<BackupDto> {
     await fs.mkdir(assetsDir, { recursive: true });
 
     const backupFile = path.join(assetsDir, `postgres-backup-${timestamp}.sql`);
+    const conn = parseConnectionString(dto.connectionString);
 
-    const url = new URL(dto.connectionString);
-    const host = url.hostname;
-    const port = url.port || '5432';
-    const username = url.username;
-    const password = url.password;
-    const database = dto.database || url.pathname.replace(/^\//, '');
+    const host = conn.hostname;
+    const port = conn.port || '5432';
+    const username = conn.username;
+    const password = conn.password;
+    const database = dto.database || conn.database;
+    console.log({ conn, database, port });
 
     const cmd = `PGPASSWORD="${password}" pg_dump -h ${host} -p ${port} -U ${username} -F p -d ${database} -f "${backupFile}"`;
     try {

@@ -14,6 +14,7 @@ export class MongoBackupStrategy implements BackupStrategy<BackupDto> {
   private readonly logger = new Logger(MongoBackupStrategy.name);
 
   async runBackup(dto: BackupDto): Promise<string> {
+    // const connection = dto.connection as MongoConnectionDto;
     const timestamp = new Date()
       .toISOString()
       .replace(/T/, '_')
