@@ -32,7 +32,6 @@ export class PostgresBackupStrategy implements BackupStrategy<BackupDto> {
     const username = conn.username;
     const password = conn.password;
     const database = dto.database || conn.database;
-    console.log({ conn, database, port });
 
     const cmd = `PGPASSWORD="${password}" pg_dump -h ${host} -p ${port} -U ${username} -F p -d ${database} -f "${backupFile}"`;
     try {
