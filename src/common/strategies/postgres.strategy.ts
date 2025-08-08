@@ -1,14 +1,55 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { BackupStrategy } from './backup.strategy';
 import { BackupDto } from '@/backup/dto/backup.dto';
+import { promisify } from 'util';
+import { exec as _exec } from 'child_process';
+import * as fs from 'fs/promises';
+import * as path from 'path';
+import { zipFile } from '../utils/zip.util';
 
+const exec = promisify(_exec);
 @Injectable()
 export class PostgresBackupStrategy implements BackupStrategy<BackupDto> {
   private readonly logger = new Logger(PostgresBackupStrategy.name);
-  constructor() {}
 
-  runBackup(): Promise<string> {
-    // Implement PostgreSQL backup logic here
-    return Promise.resolve('PostgreSQL backup completed');
+  async runBackup(dto: BackupDto): Promise<string> {
+    const timestamp = new Date()
+      .toISOString()
+      .replace(/T/, '_')
+      .replace(/[:.]/g, '-')
+      .replace(/Z$/, '');
+
+    const assetsDir = path.resolve(__dirname, '..', '..', 'assets');
+    await fs.mkdir(assetsDir, { recursive: true });
+
+    const backupFile = path.join(assetsDir, `postgres-backup-${timestamp}.sql`);
+
+    const url = new URL(dto.connectionString);
+    const host = url.hostname;
+    const port = url.port || '5432';
+    const username = url.username;
+    const password = url.password;
+    const database = dto.database || url.pathname.replace(/^\//, '');
+
+    const cmd = `PGPASSWORD="${password}" pg_dump -h ${host} -p ${port} -U ${username} -F p -d ${database} -f "${backupFile}"`;
+    try {
+      this.logger.debug(`Running pg_dump into ${backupFile}`);
+      await exec(cmd, { shell: '/bin/bash' });
+
+      const zipPath = path.join(assetsDir, `postgres-backup-${timestamp}.zip`);
+      await zipFile(backupFile, zipPath);
+
+      await fs.rm(backupFile, { force: true });
+
+      this.logger.debug(`Postgres backup created at ${zipPath}`);
+      return zipPath;
+    } catch (err: any) {
+      await fs.rm(backupFile, { force: true }).catch(() => {});
+      this.logger.error(
+        'Postgres backup failed',
+        err?.stderr ?? err?.message ?? err,
+      );
+      throw err;
+    }
   }
 }

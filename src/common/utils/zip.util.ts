@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as archiver from 'archiver';
+import archiver from 'archiver';
 
 export function zipFile(srcFilePath: string, zipPath: string): Promise<string> {
   return new Promise((resolve, reject) => {

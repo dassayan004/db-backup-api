@@ -1,4 +1,4 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { ConnectionService } from './connection.service';
 import { TestConnectionDto } from './dto/test-connection.dto';
 
@@ -7,11 +7,13 @@ export class ConnectionController {
   constructor(private readonly connectionService: ConnectionService) {}
 
   @Post('test-connection')
+  @HttpCode(HttpStatus.OK)
   async testConnection(@Body() dto: TestConnectionDto) {
     return this.connectionService.testConnection(dto);
   }
 
   @Post('list-databases')
+  @HttpCode(HttpStatus.OK)
   async listDatabases(@Body() dto: TestConnectionDto) {
     return this.connectionService.listDatabases(dto);
   }
