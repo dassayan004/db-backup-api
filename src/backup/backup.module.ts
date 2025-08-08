@@ -3,12 +3,18 @@ import { BackupService } from './backup.service';
 import { BackupController } from './backup.controller';
 import {
   MongoBackupStrategy,
+  MysqlBackupStrategy,
   PostgresBackupStrategy,
 } from '@/common/strategies';
 
 @Module({
   controllers: [BackupController],
-  providers: [BackupService, PostgresBackupStrategy, MongoBackupStrategy],
+  providers: [
+    BackupService,
+    PostgresBackupStrategy,
+    MongoBackupStrategy,
+    MysqlBackupStrategy,
+  ],
   exports: [BackupService],
 })
 export class BackupModule {}

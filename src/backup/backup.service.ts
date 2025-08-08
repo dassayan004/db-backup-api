@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import {
   MongoBackupStrategy,
+  MysqlBackupStrategy,
   PostgresBackupStrategy,
 } from '@/common/strategies';
 import { BackupDto } from './dto/backup.dto';
@@ -21,6 +22,7 @@ export class BackupService {
   constructor(
     private readonly pgStrategy: PostgresBackupStrategy,
     private readonly mongoStrategy: MongoBackupStrategy,
+    private readonly mysqlStrategy: MysqlBackupStrategy,
   ) {}
 
   async runBackup(dto: BackupDto): Promise<StreamableFile> {
@@ -34,6 +36,9 @@ export class BackupService {
           break;
         case DatabaseProvider.MONGO:
           zipPath = await this.mongoStrategy.runBackup(dto);
+          break;
+        case DatabaseProvider.MYSQL:
+          zipPath = await this.mysqlStrategy.runBackup(dto);
           break;
         default:
           throw new Error(`Unsupported provider: ${String(dto.provider)}`);
