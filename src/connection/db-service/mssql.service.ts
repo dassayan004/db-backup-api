@@ -7,30 +7,6 @@ import { parseMssqlUrlConnectionString } from '@/common/utils/util';
 export class MsSqlService {
   private readonly logger = new Logger(MsSqlService.name);
 
-  async checkConnection(dto: TestConnectionDto): Promise<boolean> {
-    let pool: ConnectionPool | undefined;
-    try {
-      const config = parseMssqlUrlConnectionString(dto.connectionString);
-      pool = await new ConnectionPool(config).connect();
-
-      this.logger.debug(`Connected to MSSQL at ${dto.connectionString}`);
-      return true;
-    } catch (error) {
-      this.logger.error(`MSSQL connection failed: ${error.message}`);
-      return false;
-    } finally {
-      if (pool) {
-        await pool
-          .close()
-          .catch((err) =>
-            this.logger.warn(
-              `Failed to close MSSQL connection: ${err.message}`,
-            ),
-          );
-      }
-    }
-  }
-
   async listDatabases(
     dto: TestConnectionDto,
   ): Promise<{ databases: string[] }> {

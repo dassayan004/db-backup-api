@@ -16,24 +16,6 @@ export class ConnectionService {
     private readonly mysqlService: MysqlService,
     private readonly mssqlService: MsSqlService,
   ) {}
-  async testConnection(
-    dto: TestConnectionDto,
-  ): Promise<{ connected: boolean }> {
-    switch (dto.provider) {
-      case DatabaseProvider.POSTGRES:
-        return { connected: await this.pgService.checkConnection(dto) };
-      case DatabaseProvider.MONGO:
-        return { connected: await this.mongoService.checkConnection(dto) };
-      case DatabaseProvider.MYSQL:
-        return { connected: await this.mysqlService.checkConnection(dto) };
-      case DatabaseProvider.MSSQL:
-        return { connected: await this.mssqlService.checkConnection(dto) };
-      default:
-        throw new BadRequestException(
-          `Unsupported provider: ${String(dto.provider)}`,
-        );
-    }
-  }
 
   async listDatabases(
     dto: TestConnectionDto,
@@ -47,6 +29,22 @@ export class ConnectionService {
         return this.mysqlService.listDatabases(dto);
       case DatabaseProvider.MSSQL:
         return this.mssqlService.listDatabases(dto);
+      default:
+        throw new BadRequestException(
+          `Unsupported provider: ${String(dto.provider)}`,
+        );
+    }
+  }
+  async dbStats(dto: TestConnectionDto) {
+    switch (dto.provider) {
+      case DatabaseProvider.POSTGRES:
+        return this.pgService.getStats(dto);
+      case DatabaseProvider.MONGO:
+        return this.mongoService.getStats(dto);
+      // case DatabaseProvider.MYSQL:
+      //   return this.mysqlService.getStats(dto);
+      // case DatabaseProvider.MSSQL:
+      //   return this.mssqlService.getStats(dto);
       default:
         throw new BadRequestException(
           `Unsupported provider: ${String(dto.provider)}`,

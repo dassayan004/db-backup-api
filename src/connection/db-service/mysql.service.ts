@@ -7,28 +7,6 @@ import { TestConnectionDto } from '../dto/test-connection.dto';
 export class MysqlService {
   private readonly logger = new Logger(MysqlService.name);
 
-  async checkConnection(dto: TestConnectionDto): Promise<boolean> {
-    let connection: mysql.Connection | undefined;
-    try {
-      connection = await mysql.createConnection(dto.connectionString);
-      this.logger.debug(`Connected to MySQL at ${dto.connectionString}`);
-      return true;
-    } catch (error) {
-      this.logger.error(`MySQL connection failed: ${error.message}`);
-      return false;
-    } finally {
-      if (connection) {
-        await connection
-          .end()
-          .catch((err) =>
-            this.logger.warn(
-              `Failed to close MySQL connection: ${err.message}`,
-            ),
-          );
-      }
-    }
-  }
-
   async listDatabases(
     dto: TestConnectionDto,
   ): Promise<{ databases: string[] }> {

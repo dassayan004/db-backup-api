@@ -6,15 +6,15 @@ import { TestConnectionDto } from './dto/test-connection.dto';
 export class ConnectionController {
   constructor(private readonly connectionService: ConnectionService) {}
 
-  @Post('test-connection')
-  @HttpCode(HttpStatus.OK)
-  async testConnection(@Body() dto: TestConnectionDto) {
-    return this.connectionService.testConnection(dto);
-  }
-
-  @Post('list-databases')
+  @Post('test-and-list')
   @HttpCode(HttpStatus.OK)
   async listDatabases(@Body() dto: TestConnectionDto) {
     return this.connectionService.listDatabases(dto);
+  }
+
+  @Post('stats')
+  @HttpCode(HttpStatus.OK)
+  async getStats(@Body() dto: TestConnectionDto) {
+    return this.connectionService.dbStats(dto);
   }
 }
