@@ -8,6 +8,8 @@ import {
   MysqlService,
   PostgresService,
 } from './db-service';
+import { AllDbService } from '@/common/types';
+
 @Injectable()
 export class ConnectionService {
   constructor(
@@ -17,38 +19,33 @@ export class ConnectionService {
     private readonly mssqlService: MsSqlService,
   ) {}
 
-  async listDatabases(
-    dto: TestConnectionDto,
-  ): Promise<{ databases: string[] }> {
-    switch (dto.provider) {
+  private getService(provider: DatabaseProvider): AllDbService {
+    switch (provider) {
       case DatabaseProvider.POSTGRES:
-        return this.pgService.listDatabases(dto);
+        return this.pgService;
       case DatabaseProvider.MONGO:
-        return this.mongoService.listDatabases(dto);
+        return this.mongoService;
       case DatabaseProvider.MYSQL:
-        return this.mysqlService.listDatabases(dto);
+      case DatabaseProvider.MARIADB: // MariaDB uses MySQL service
+        return this.mysqlService;
       case DatabaseProvider.MSSQL:
-        return this.mssqlService.listDatabases(dto);
+        return this.mssqlService;
       default:
         throw new BadRequestException(
-          `Unsupported provider: ${String(dto.provider)}`,
+          `Unsupported provider: ${String(provider)}`,
         );
     }
   }
+
+  async listDatabases(
+    dto: TestConnectionDto,
+  ): Promise<{ databases: string[] }> {
+    const service = this.getService(dto.provider);
+    return service.listDatabases(dto);
+  }
+
   async dbStats(dto: TestConnectionDto) {
-    switch (dto.provider) {
-      case DatabaseProvider.POSTGRES:
-        return this.pgService.getStats(dto);
-      case DatabaseProvider.MONGO:
-        return this.mongoService.getStats(dto);
-      case DatabaseProvider.MYSQL:
-        return this.mysqlService.getStats(dto);
-      case DatabaseProvider.MSSQL:
-        return this.mssqlService.getStats(dto);
-      default:
-        throw new BadRequestException(
-          `Unsupported provider: ${String(dto.provider)}`,
-        );
-    }
+    const service = this.getService(dto.provider);
+    return service.getStats(dto);
   }
 }

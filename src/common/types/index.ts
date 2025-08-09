@@ -1,3 +1,10 @@
+import {
+  MongoService,
+  MsSqlService,
+  MysqlService,
+  PostgresService,
+} from '@/connection/db-service';
+
 export interface DatabaseStatsDto {
   version: string;
   activeConnections: number;
@@ -13,3 +20,8 @@ export interface DatabaseStatsDto {
   // bufferPoolUsagePct: number;
   responseTimeHistory?: { timestamp: string; ms: number }[];
 }
+export type AllDbService =
+  | PostgresService
+  | MongoService
+  | MysqlService
+  | MsSqlService;

@@ -6,6 +6,7 @@ import {
   StreamableFile,
 } from '@nestjs/common';
 import {
+  BackupStrategy,
   MongoBackupStrategy,
   MsSqlBackupStrategy,
   MysqlBackupStrategy,
@@ -27,27 +28,27 @@ export class BackupService {
     private readonly mssqlStrategy: MsSqlBackupStrategy,
   ) {}
 
+  private getStrategy(provider: DatabaseProvider): BackupStrategy<BackupDto> {
+    switch (provider) {
+      case DatabaseProvider.POSTGRES:
+        return this.pgStrategy;
+      case DatabaseProvider.MONGO:
+        return this.mongoStrategy;
+      case DatabaseProvider.MYSQL:
+      case DatabaseProvider.MARIADB:
+        return this.mysqlStrategy;
+      case DatabaseProvider.MSSQL:
+        return this.mssqlStrategy;
+      default:
+        throw new Error(`Unsupported provider: ${String(provider)}`);
+    }
+  }
   async runBackup(dto: BackupDto): Promise<StreamableFile> {
     try {
       this.logger.log(`Running backup for provider: ${dto.provider}`);
 
-      let zipPath: string;
-      switch (dto.provider) {
-        case DatabaseProvider.POSTGRES:
-          zipPath = await this.pgStrategy.runBackup(dto);
-          break;
-        case DatabaseProvider.MONGO:
-          zipPath = await this.mongoStrategy.runBackup(dto);
-          break;
-        case DatabaseProvider.MYSQL:
-          zipPath = await this.mysqlStrategy.runBackup(dto);
-          break;
-        case DatabaseProvider.MSSQL:
-          zipPath = await this.mssqlStrategy.runBackup(dto);
-          break;
-        default:
-          throw new Error(`Unsupported provider: ${String(dto.provider)}`);
-      }
+      const strategy = this.getStrategy(dto.provider);
+      const zipPath = await strategy.runBackup(dto);
 
       const filename = path.basename(zipPath);
       const fileStream = createReadStream(zipPath);
