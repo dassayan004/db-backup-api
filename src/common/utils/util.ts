@@ -14,6 +14,19 @@ export function parseConnectionString(connectionString: string) {
 export function parseMssqlUrlConnectionString(connStr: string): MssqlConfig {
   const url = new URL(connStr);
 
+  const encryptParam = url.searchParams.get('encrypt');
+  const trustServerCertParam = url.searchParams.get('trustServerCertificate');
+  const connectionTimeoutParam = url.searchParams.get('connectionTimeout');
+  const encrypt =
+    encryptParam !== null ? encryptParam.toLowerCase() === 'true' : true;
+  const trustServerCertificate =
+    trustServerCertParam !== null
+      ? trustServerCertParam.toLowerCase() === 'true'
+      : false;
+
+  const connectTimeout = connectionTimeoutParam
+    ? parseInt(connectionTimeoutParam, 10)
+    : undefined;
   const config: MssqlConfig = {
     server: url.hostname,
     user: url.username,
@@ -21,8 +34,9 @@ export function parseMssqlUrlConnectionString(connStr: string): MssqlConfig {
     database: url.pathname.replace(/^\//, ''), // remove leading /
     port: url.port ? parseInt(url.port, 10) : 1433,
     options: {
-      encrypt: true,
-      trustServerCertificate: true,
+      encrypt,
+      trustServerCertificate,
+      connectTimeout,
     },
   };
 
