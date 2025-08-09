@@ -7,6 +7,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { zipFile } from '../utils/zip.util';
 import { parseConnectionString } from '../utils/util';
+import { getFormattedTimestamp } from '../utils/date.utils';
 
 const exec = promisify(_exec);
 @Injectable()
@@ -14,11 +15,7 @@ export class MysqlBackupStrategy implements BackupStrategy<BackupDto> {
   private readonly logger = new Logger(MysqlBackupStrategy.name);
 
   async runBackup(dto: BackupDto): Promise<string> {
-    const timestamp = new Date()
-      .toISOString()
-      .replace(/T/, '_')
-      .replace(/[:.]/g, '-')
-      .replace(/Z$/, '');
+    const timestamp = getFormattedTimestamp();
 
     const assetsDir = path.resolve(__dirname, '..', '..', 'assets');
     await fs.mkdir(assetsDir, { recursive: true });

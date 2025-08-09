@@ -7,6 +7,7 @@ import * as path from 'path';
 import { BackupStrategy } from './backup.strategy';
 import { BackupDto } from '@/backup/dto/backup.dto';
 import { zipDirectory } from '@/common/utils/zip.util';
+import { getFormattedTimestamp } from '../utils/date.utils';
 
 const exec = promisify(_exec);
 @Injectable()
@@ -15,11 +16,7 @@ export class MongoBackupStrategy implements BackupStrategy<BackupDto> {
 
   async runBackup(dto: BackupDto): Promise<string> {
     // const connection = dto.connection as MongoConnectionDto;
-    const timestamp = new Date()
-      .toISOString()
-      .replace(/T/, '_')
-      .replace(/[:.]/g, '-')
-      .replace(/Z$/, '');
+    const timestamp = getFormattedTimestamp();
 
     const assetsDir = path.resolve(__dirname, '..', '..', 'assets');
     await fs.mkdir(assetsDir, { recursive: true });

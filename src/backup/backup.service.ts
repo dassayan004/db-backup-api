@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import {
   MongoBackupStrategy,
+  MsSqlBackupStrategy,
   MysqlBackupStrategy,
   PostgresBackupStrategy,
 } from '@/common/strategies';
@@ -23,6 +24,7 @@ export class BackupService {
     private readonly pgStrategy: PostgresBackupStrategy,
     private readonly mongoStrategy: MongoBackupStrategy,
     private readonly mysqlStrategy: MysqlBackupStrategy,
+    private readonly mssqlStrategy: MsSqlBackupStrategy,
   ) {}
 
   async runBackup(dto: BackupDto): Promise<StreamableFile> {
@@ -39,6 +41,9 @@ export class BackupService {
           break;
         case DatabaseProvider.MYSQL:
           zipPath = await this.mysqlStrategy.runBackup(dto);
+          break;
+        case DatabaseProvider.MSSQL:
+          zipPath = await this.mssqlStrategy.runBackup(dto);
           break;
         default:
           throw new Error(`Unsupported provider: ${String(dto.provider)}`);
@@ -62,7 +67,6 @@ export class BackupService {
         disposition: `attachment; filename="${filename}"`,
       });
     } catch (err: any) {
-      this.logger.error(`Backup failed: ${err?.message || err}`);
       throw new HttpException(
         err?.message || 'Backup failed',
         HttpStatus.INTERNAL_SERVER_ERROR,

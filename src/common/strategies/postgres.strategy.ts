@@ -7,6 +7,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { zipFile } from '../utils/zip.util';
 import { parseConnectionString } from '../utils/util';
+import { getFormattedTimestamp } from '../utils/date.utils';
 
 const exec = promisify(_exec);
 @Injectable()
@@ -15,11 +16,7 @@ export class PostgresBackupStrategy implements BackupStrategy<BackupDto> {
 
   async runBackup(dto: BackupDto): Promise<string> {
     // const connection = dto.connection as PostgresConnectionDto;
-    const timestamp = new Date()
-      .toISOString()
-      .replace(/T/, '_')
-      .replace(/[:.]/g, '-')
-      .replace(/Z$/, '');
+    const timestamp = getFormattedTimestamp();
 
     const assetsDir = path.resolve(__dirname, '..', '..', 'assets');
     await fs.mkdir(assetsDir, { recursive: true });

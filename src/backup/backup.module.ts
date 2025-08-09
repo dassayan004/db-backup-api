@@ -3,6 +3,7 @@ import { BackupService } from './backup.service';
 import { BackupController } from './backup.controller';
 import {
   MongoBackupStrategy,
+  MsSqlBackupStrategy,
   MysqlBackupStrategy,
   PostgresBackupStrategy,
 } from '@/common/strategies';
@@ -14,6 +15,7 @@ import {
     PostgresBackupStrategy,
     MongoBackupStrategy,
     MysqlBackupStrategy,
+    MsSqlBackupStrategy,
   ],
   exports: [BackupService],
 })
