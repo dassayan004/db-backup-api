@@ -3,8 +3,7 @@ import { promisify } from 'util';
 import { exec as _exec } from 'child_process';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-
-import { BackupStrategy } from './backup.strategy';
+import { BackupStrategy } from '../types';
 import { BackupDto } from '@/backup/dto/backup.dto';
 import { zipDirectory } from '@/common/utils/zip.util';
 import { getFormattedTimestamp } from '../utils/date.utils';

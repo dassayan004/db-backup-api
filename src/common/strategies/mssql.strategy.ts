@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { BackupStrategy } from './backup.strategy';
 import { BackupDto } from '@/backup/dto/backup.dto';
 import { promisify } from 'util';
 import { exec as _exec } from 'child_process';
@@ -8,6 +7,7 @@ import * as path from 'path';
 import { zipFile } from '../utils/zip.util';
 import { parseMssqlUrlConnectionString } from '../utils/util';
 import { getFormattedTimestamp } from '../utils/date.utils';
+import { BackupStrategy } from '../types';
 
 const exec = promisify(_exec);
 @Injectable()

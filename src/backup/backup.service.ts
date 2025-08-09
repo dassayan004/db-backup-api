@@ -6,7 +6,6 @@ import {
   StreamableFile,
 } from '@nestjs/common';
 import {
-  BackupStrategy,
   MongoBackupStrategy,
   MsSqlBackupStrategy,
   MysqlBackupStrategy,
@@ -16,6 +15,7 @@ import { BackupDto } from './dto/backup.dto';
 import { DatabaseProvider } from '@/common/enum';
 import path from 'path';
 import { createReadStream, promises as fs } from 'fs';
+import { BackupStrategy } from '@/common/types';
 
 @Injectable()
 export class BackupService {
