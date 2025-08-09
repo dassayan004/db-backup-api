@@ -81,8 +81,10 @@ export class MongoService {
           { timestamp: new Date().toISOString(), ms: elapsed },
         ],
       };
+    } catch (error) {
+      throw new BadRequestException(`MongoDB stats failed: ${error.message}`);
     } finally {
-      await client.close();
+      await client.close().catch(() => {});
     }
   }
 }

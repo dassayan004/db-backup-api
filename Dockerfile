@@ -20,7 +20,13 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./
 
-RUN apk add --no-cache postgresql-client mongodb-tools bash
+# Install PostgreSQL, MongoDB, MariaDB, MSSQL (freetds), and Bash
+RUN apk add --no-cache \
+    postgresql-client \
+    mongodb-tools \
+    mariadb-client \
+    freetds \
+    bash
 
 EXPOSE 8000
 

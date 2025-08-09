@@ -39,23 +39,17 @@ export class PostgresService {
     await client.connect();
 
     try {
-      // Version
-      const versionRes = await client.query('SELECT version();');
+      /// Version, Uptime, Disk usage (data + log files for current DB), Active connections (exclude system sessions)
+      const [versionRes, activeConnsRes, uptimeRes, dbSizeRes] =
+        await Promise.all([
+          client.query('SELECT version();'),
+          client.query('SELECT count(*) FROM pg_stat_activity;'),
+          client.query(`SELECT now() - pg_postmaster_start_time() as uptime;`),
+          client.query(
+            `SELECT pg_database_size(current_database()) as size_bytes;`,
+          ),
+        ]);
 
-      // Active connections
-      const activeConnsRes = await client.query(
-        'SELECT count(*) FROM pg_stat_activity;',
-      );
-
-      // Uptime (requires server start time)
-      const uptimeRes = await client.query(
-        `SELECT now() - pg_postmaster_start_time() as uptime;`,
-      );
-
-      // Disk usage
-      const dbSizeRes = await client.query(
-        `SELECT pg_database_size(current_database()) as size_bytes;`,
-      );
       const sizeBytes = parseInt(dbSizeRes.rows[0].size_bytes, 10);
       const diskUsage = `${(sizeBytes / 1024).toFixed(1)} KB`;
       const elapsed = Date.now() - start;
@@ -68,8 +62,10 @@ export class PostgresService {
           { timestamp: new Date().toISOString(), ms: elapsed },
         ],
       };
+    } catch (error) {
+      throw new BadRequestException(`Postgres stats failed: ${error.message}`);
     } finally {
-      await client.end();
+      await client.end().catch(() => {});
     }
   }
 }

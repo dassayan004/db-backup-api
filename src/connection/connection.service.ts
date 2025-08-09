@@ -41,10 +41,10 @@ export class ConnectionService {
         return this.pgService.getStats(dto);
       case DatabaseProvider.MONGO:
         return this.mongoService.getStats(dto);
-      // case DatabaseProvider.MYSQL:
-      //   return this.mysqlService.getStats(dto);
-      // case DatabaseProvider.MSSQL:
-      //   return this.mssqlService.getStats(dto);
+      case DatabaseProvider.MYSQL:
+        return this.mysqlService.getStats(dto);
+      case DatabaseProvider.MSSQL:
+        return this.mssqlService.getStats(dto);
       default:
         throw new BadRequestException(
           `Unsupported provider: ${String(dto.provider)}`,

@@ -40,11 +40,10 @@ export class MongoBackupStrategy implements BackupStrategy<BackupDto> {
       return zipPath;
     } catch (err: any) {
       await fs.rm(dumpFolder, { recursive: true, force: true }).catch(() => {});
-      this.logger.error(
-        'Mongo backup failed',
-        err?.stderr ?? err?.message ?? err,
-      );
-      throw err;
+      const errorMessage =
+        err?.stderr ?? err?.message ?? 'Unknown error during Mongo backup';
+      this.logger.error('Mongo backup failed', errorMessage);
+      throw new Error(errorMessage);
     }
   }
 }

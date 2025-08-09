@@ -44,11 +44,10 @@ export class MysqlBackupStrategy implements BackupStrategy<BackupDto> {
       return zipPath;
     } catch (err: any) {
       await fs.rm(backupFile, { force: true }).catch(() => {});
-      this.logger.error(
-        'MySQL backup failed',
-        err?.stderr ?? err?.message ?? err,
-      );
-      throw err;
+      const errorMessage =
+        err?.stderr ?? err?.message ?? 'Unknown error during MySQL backup';
+      this.logger.error('MySQL backup failed', errorMessage);
+      throw new Error(errorMessage);
     }
   }
 }
