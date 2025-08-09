@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import archiver from 'archiver';
-
+import * as unzipper from 'unzipper';
 export function zipFile(srcFilePath: string, zipPath: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const output = fs.createWriteStream(zipPath);
@@ -27,5 +27,14 @@ export function zipDirectory(srcDir: string, zipPath: string): Promise<string> {
     archive.pipe(output);
     archive.directory(srcDir, false);
     archive.finalize();
+  });
+}
+
+export function unzipFile(zipPath: string, destDir: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    fs.createReadStream(zipPath)
+      .pipe(unzipper.Extract({ path: destDir }))
+      .on('close', resolve)
+      .on('error', reject);
   });
 }
