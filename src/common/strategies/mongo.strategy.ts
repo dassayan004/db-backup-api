@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { promisify } from 'util';
 import { exec as _exec } from 'child_process';
 import * as fs from 'fs/promises';
@@ -7,12 +7,21 @@ import { BackupStrategy } from '../types';
 import { BackupDto } from '@/backup/dto/backup.dto';
 import { zipDirectory } from '@/common/utils/zip.util';
 import { getFormattedTimestamp } from '../utils/date.utils';
+import { PubSub } from 'graphql-subscriptions';
+import { PUB_SUB } from '../subscription/pubsub.module';
+import { BackupStatus } from '@/backup/dto/backup-log.dto';
 
 const exec = promisify(_exec);
 @Injectable()
 export class MongoBackupStrategy implements BackupStrategy<BackupDto> {
   private readonly logger = new Logger(MongoBackupStrategy.name);
+  constructor(@Inject(PUB_SUB) private readonly pubSub: PubSub) {}
 
+  private async publishLog(status: BackupStatus, message: string) {
+    await this.pubSub.publish('backupLogs', {
+      backupLogs: { status, message },
+    });
+  }
   async runBackup(dto: BackupDto): Promise<string> {
     // const connection = dto.connection as MongoConnectionDto;
     const timestamp = getFormattedTimestamp();

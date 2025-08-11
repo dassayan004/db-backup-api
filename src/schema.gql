@@ -1,0 +1,24 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type BackupLog {
+  message: String!
+  status: BackupStatus!
+}
+
+"""Status of the backup process"""
+enum BackupStatus {
+  COMPLETED
+  FAILED
+  IN_PROGRESS
+  STARTED
+}
+
+type Query {
+  _serviceInfo: String!
+}
+
+type Subscription {
+  backupLogs: BackupLog!
+}

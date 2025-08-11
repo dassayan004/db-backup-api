@@ -7,6 +7,7 @@ import {
   MysqlBackupStrategy,
   PostgresBackupStrategy,
 } from '@/common/strategies';
+import { BackupResolver } from './backup.resolver';
 
 @Module({
   controllers: [BackupController],
@@ -16,6 +17,7 @@ import {
     MongoBackupStrategy,
     MysqlBackupStrategy,
     MsSqlBackupStrategy,
+    BackupResolver,
   ],
   exports: [BackupService],
 })
