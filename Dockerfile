@@ -1,5 +1,5 @@
 # ---- Build Stage ----
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
@@ -12,7 +12,7 @@ COPY . .
 RUN pnpm build
 
 # ---- Production Stage ----
-FROM node:18-alpine AS production
+FROM node:20-alpine AS production
 
 WORKDIR /app
 
@@ -27,6 +27,8 @@ RUN apk add --no-cache \
     mariadb-client \
     freetds \
     bash
+
+ENV NODE_ENV=production
 
 EXPOSE 8000
 

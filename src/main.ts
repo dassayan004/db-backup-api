@@ -4,10 +4,11 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ConfigSchema } from './common/config/schema';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  const configService = app.get(ConfigService);
+  const configService = app.get(ConfigService<ConfigSchema, true>);
 
   const port = configService.getOrThrow<number>('PORT');
   const baseUrl = configService.getOrThrow<string>('BASE_URL');
