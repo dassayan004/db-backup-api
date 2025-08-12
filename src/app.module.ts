@@ -29,6 +29,9 @@ import { HealthModule } from './health/health.module';
         sortSchema: true,
         playground: false,
         includeStacktraceInErrorResponses: false,
+        subscriptions: {
+          'graphql-ws': true,
+        },
         plugins: [
           configService.getOrThrow('NODE_ENV') === 'production'
             ? ApolloServerPluginLandingPageProductionDefault()
