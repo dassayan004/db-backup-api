@@ -21,4 +21,5 @@ type Query {
 
 type Subscription {
   backupLogs: BackupLog!
+  restoreLogs: BackupLog!
 }

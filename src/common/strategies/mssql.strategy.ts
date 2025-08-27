@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { BackupDto } from '@/backup/dto/backup.dto';
 import { promisify } from 'util';
 import { exec as _exec } from 'child_process';
@@ -8,13 +8,35 @@ import { zipFile } from '../utils/zip.util';
 import { parseMssqlUrlConnectionString } from '../utils/util';
 import { getFormattedTimestamp } from '../utils/date.utils';
 import { BackupStrategy } from '../types';
+import { RestoreDto } from '@/backup/dto/restore.dto';
+import { BackupStatus } from '@/backup/dto/backup-log.dto';
+import { PubSub } from 'graphql-subscriptions';
+import { PUB_SUB } from '../subscription/pubsub.module';
 
 const exec = promisify(_exec);
 @Injectable()
-export class MsSqlBackupStrategy implements BackupStrategy<BackupDto> {
+export class MsSqlBackupStrategy
+  implements BackupStrategy<BackupDto, RestoreDto>
+{
   private readonly logger = new Logger(MsSqlBackupStrategy.name);
+  constructor(@Inject(PUB_SUB) private readonly pubSub: PubSub) {}
+
+  private async publishLog(
+    channel: 'backupLogs' | 'restoreLogs',
+    status: BackupStatus,
+    message: string,
+  ) {
+    await this.pubSub.publish(channel, {
+      [channel]: { status, message },
+    });
+  }
 
   async runBackup(dto: BackupDto): Promise<string> {
+    await this.publishLog(
+      'backupLogs',
+      BackupStatus.STARTED,
+      'MSSQL backup started',
+    );
     const timestamp = getFormattedTimestamp();
 
     const assetsDir = path.resolve(__dirname, '..', '..', 'assets');
@@ -37,6 +59,11 @@ export class MsSqlBackupStrategy implements BackupStrategy<BackupDto> {
       `/TargetFile:${backupFile}`,
       '/Quiet',
     ].join(' ');
+    await this.publishLog(
+      'backupLogs',
+      BackupStatus.IN_PROGRESS,
+      'MSSQL backup in progress...',
+    );
 
     try {
       this.logger.debug(`Running sqlpackage export into ${backupFile}`);
@@ -46,6 +73,11 @@ export class MsSqlBackupStrategy implements BackupStrategy<BackupDto> {
       await fs.rm(backupFile, { force: true });
 
       this.logger.debug(`MSSQL backup created at ${zipPath}`);
+      await this.publishLog(
+        'backupLogs',
+        BackupStatus.COMPLETED,
+        `MSSQL backup completed: ${zipPath}`,
+      );
       return zipPath;
     } catch (err: any) {
       await fs.rm(backupFile, { force: true }).catch(() => {});
@@ -53,7 +85,7 @@ export class MsSqlBackupStrategy implements BackupStrategy<BackupDto> {
         err?.stderr ?? err?.message ?? 'Unknown error during MSSQL backup';
 
       this.logger.error('MSSQL backup failed', errorMessage);
-
+      await this.publishLog('backupLogs', BackupStatus.FAILED, errorMessage);
       throw new Error(errorMessage);
     }
   }

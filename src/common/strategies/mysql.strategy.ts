@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { BackupStrategy } from '../types';
 import { BackupDto } from '@/backup/dto/backup.dto';
 import { promisify } from 'util';
@@ -8,13 +8,34 @@ import * as path from 'path';
 import { zipFile } from '../utils/zip.util';
 import { parseConnectionString } from '../utils/util';
 import { getFormattedTimestamp } from '../utils/date.utils';
+import { RestoreDto } from '@/backup/dto/restore.dto';
+import { BackupStatus } from '@/backup/dto/backup-log.dto';
+import { PubSub } from 'graphql-subscriptions';
+import { PUB_SUB } from '../subscription/pubsub.module';
 
 const exec = promisify(_exec);
 @Injectable()
-export class MysqlBackupStrategy implements BackupStrategy<BackupDto> {
+export class MysqlBackupStrategy
+  implements BackupStrategy<BackupDto, RestoreDto>
+{
   private readonly logger = new Logger(MysqlBackupStrategy.name);
+  constructor(@Inject(PUB_SUB) private readonly pubSub: PubSub) {}
 
+  private async publishLog(
+    channel: 'backupLogs' | 'restoreLogs',
+    status: BackupStatus,
+    message: string,
+  ) {
+    await this.pubSub.publish(channel, {
+      [channel]: { status, message },
+    });
+  }
   async runBackup(dto: BackupDto): Promise<string> {
+    await this.publishLog(
+      'backupLogs',
+      BackupStatus.STARTED,
+      'MySQL backup started',
+    );
     const timestamp = getFormattedTimestamp();
 
     const assetsDir = path.resolve(__dirname, '..', '..', 'assets');
@@ -30,7 +51,11 @@ export class MysqlBackupStrategy implements BackupStrategy<BackupDto> {
     const database = dto.database || conn.database;
 
     const cmd = `mariadb-dump -h ${host} -P ${port} -u ${username} -p${password} --single-transaction --skip-lock-tables --ssl --skip-ssl-verify ${database} > "${backupFile}"`;
-
+    await this.publishLog(
+      'backupLogs',
+      BackupStatus.IN_PROGRESS,
+      'MySQL backup in progress...',
+    );
     try {
       this.logger.debug(`Running mysqldump into ${backupFile}`);
       await exec(cmd, { shell: '/bin/bash' });
@@ -41,12 +66,18 @@ export class MysqlBackupStrategy implements BackupStrategy<BackupDto> {
       await fs.rm(backupFile, { force: true });
 
       this.logger.debug(`MySQL backup created at ${zipPath}`);
+      await this.publishLog(
+        'backupLogs',
+        BackupStatus.COMPLETED,
+        `MySQL backup completed: ${zipPath}`,
+      );
       return zipPath;
     } catch (err: any) {
       await fs.rm(backupFile, { force: true }).catch(() => {});
       const errorMessage =
         err?.stderr ?? err?.message ?? 'Unknown error during MySQL backup';
       this.logger.error('MySQL backup failed', errorMessage);
+      await this.publishLog('backupLogs', BackupStatus.FAILED, errorMessage);
       throw new Error(errorMessage);
     }
   }

@@ -17,4 +17,9 @@ export class BackupResolver {
   backupLogs() {
     return this.pubSub.asyncIterableIterator('backupLogs');
   }
+
+  @Subscription(() => BackupLog, { name: 'restoreLogs' })
+  restoreLogs() {
+    return this.pubSub.asyncIterableIterator('restoreLogs');
+  }
 }
