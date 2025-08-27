@@ -105,12 +105,6 @@ export class PostgresBackupStrategy
     try {
       await fs.writeFile(tempFilePath, file.buffer);
 
-      await this.publishLog(
-        'restoreLogs',
-        BackupStatus.IN_PROGRESS,
-        'Postgres restore in progress...',
-      );
-
       let backupFilePath: string | null = null;
 
       if (tempFilePath.endsWith('.zip')) {
@@ -130,7 +124,11 @@ export class PostgresBackupStrategy
           'Uploaded file must be either a .zip (containing .sql) or a .sql file.',
         );
       }
-
+      await this.publishLog(
+        'restoreLogs',
+        BackupStatus.IN_PROGRESS,
+        'Postgres restore in progress...',
+      );
       // Step 1: Check if DB exists
       const checkDbCmd = `PGPASSWORD="${password}" psql -h ${host} -p ${port} -U ${username} -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname='${database}'"`;
       const { stdout: dbExists } = await exec(checkDbCmd, {
@@ -150,12 +148,12 @@ export class PostgresBackupStrategy
       this.logger.debug(`Running restore from ${backupFilePath}`);
       await exec(restoreCmd, { shell: '/bin/bash' });
 
-      this.logger.debug('Postgres restore completed');
       await this.publishLog(
         'restoreLogs',
         BackupStatus.COMPLETED,
         'Postgres restore completed',
       );
+      this.logger.debug('Postgres restore completed');
     } catch (err: any) {
       const errorMessage =
         err?.stderr ?? err?.message ?? 'Unknown error during Postgres restore';

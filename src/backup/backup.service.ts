@@ -93,7 +93,9 @@ export class BackupService {
       await strategy.runRestore(dto, file);
 
       this.logger.log('Restore completed successfully!');
-      return { message: 'Restore completed successfully' };
+      return {
+        message: `${dto.provider.toUpperCase()} Restore completed successfully`,
+      };
     } catch (err: any) {
       this.logger.error(`Restore failed: ${err?.message}`);
       throw new HttpException(

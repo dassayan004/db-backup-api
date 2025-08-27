@@ -95,11 +95,6 @@ export class MongoBackupStrategy
       this.logger.debug(`Unzipping ${tempFilePath} to ${restoreFolder}`);
       await unzipFile(tempFilePath, restoreFolder);
 
-      await this.publishLog(
-        'restoreLogs',
-        BackupStatus.IN_PROGRESS,
-        'Mongo restore in progress...',
-      );
       const unzippedContents = await fs.readdir(restoreFolder);
       let dumpDir: string | undefined;
       for (const item of unzippedContents) {
@@ -113,18 +108,24 @@ export class MongoBackupStrategy
       if (!dumpDir) {
         throw new Error('Could not locate BSON dump directory in backup file');
       }
+
+      await this.publishLog(
+        'restoreLogs',
+        BackupStatus.IN_PROGRESS,
+        'Mongo restore in progress...',
+      );
       const dbArg = `--db="${dto.targetDatabaseName}"`;
 
       const cmd = `mongorestore --uri="${dto.connectionString}" ${dbArg} --dir="${path.join(restoreFolder, dumpDir)}" --drop`;
       this.logger.debug(`Running mongorestore from ${restoreFolder}`);
       await exec(cmd, { shell: '/bin/bash' });
 
-      this.logger.debug('Mongo restore completed');
       await this.publishLog(
         'restoreLogs',
         BackupStatus.COMPLETED,
         'Mongo restore completed',
       );
+      this.logger.debug('Mongo restore completed');
     } catch (err: any) {
       const errorMessage =
         err?.stderr ?? err?.message ?? 'Unknown error during Mongo restore';

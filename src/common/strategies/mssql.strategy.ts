@@ -151,12 +151,12 @@ export class MsSqlBackupStrategy
       this.logger.debug(`Running sqlpackage import from ${bacpacPath}`);
       await exec(cmd, { shell: '/bin/bash' });
 
-      this.logger.debug('MSSQL restore completed successfully');
       await this.publishLog(
         'restoreLogs',
         BackupStatus.COMPLETED,
         'MSSQL restore completed',
       );
+      this.logger.debug('MSSQL restore completed successfully');
     } catch (err: any) {
       const errorMessage =
         err?.stderr ?? err?.message ?? 'Unknown error during MSSQL restore';

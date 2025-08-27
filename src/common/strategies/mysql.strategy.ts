@@ -150,12 +150,12 @@ export class MysqlBackupStrategy
       this.logger.debug(`Running mysql restore from ${backupFilePath}`);
       await exec(restoreCmd, { shell: '/bin/bash' });
 
-      this.logger.debug('MySQL restore completed');
       await this.publishLog(
         'restoreLogs',
         BackupStatus.COMPLETED,
         'MySQL restore completed',
       );
+      this.logger.debug('MySQL restore completed');
     } catch (err: any) {
       const errorMessage =
         err?.stderr ?? err?.message ?? 'Unknown error during MySQL restore';
