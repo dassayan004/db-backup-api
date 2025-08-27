@@ -13,9 +13,10 @@ import { BackupService } from './backup.service';
 import { BackupDto } from './dto/backup.dto';
 import { RestoreDto } from './dto/restore.dto';
 import { Express } from 'express';
-import { ApiBody, ApiConsumes } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { DatabaseProvider } from '@/common/enum';
 
+@ApiTags('Backup and Restore')
 @Controller('backup-restore')
 export class BackupController {
   constructor(private readonly backupService: BackupService) {}
