@@ -12,7 +12,6 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { BackupService } from './backup.service';
 import { BackupDto } from './dto/backup.dto';
 import { RestoreDto } from './dto/restore.dto';
-import { Express } from 'express';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { DatabaseProvider } from '@/common/enum';
 
